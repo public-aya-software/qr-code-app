@@ -1,12 +1,16 @@
 'use client'
 
 import { useState } from 'react'
-import { QrReader } from 'react-qr-reader'
+import dynamic from 'next/dynamic'
+const QrScanner = dynamic(
+  () => import('@yudiel/react-qr-scanner').then(mod => mod.QrScanner),
+  { ssr: false }
+) as any
 import { QRCodeSVG } from 'qrcode.react'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent, CardHeader, CardTitle } from "components/ui/card"
+import { Input } from "components/ui/input"
+import { Button } from "components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "components/ui/tabs"
 
 export default function QRCodeApp() {
   const [scannedData, setScannedData] = useState<string>('')
@@ -14,7 +18,7 @@ export default function QRCodeApp() {
 
   const handleScan = (result: any) => {
     if (result) {
-      setScannedData(result?.text)
+      setScannedData(result)
     }
   }
 
@@ -37,19 +41,24 @@ export default function QRCodeApp() {
             </CardHeader>
             <CardContent>
               <div className="w-full max-w-sm mx-auto">
-                <QrReader
-                  onResult={handleScan}
+                <QrScanner
+                  onDecode={handleScan}
+                  onError={handleError}
                   constraints={{ facingMode: 'environment' }}
                   videoStyle={{ width: '100%', height: 'auto' }}
-                  videoContainerStyle={{ paddingTop: '100%', position: 'relative' }}
-                  videoId="qr-reader-video"
+                  containerStyle={{ paddingTop: '100%', position: 'relative' }}
                 />
               </div>
               {scannedData && (
-                <div className="mt-4">
-                  <h2 className="text-lg font-semibold">Scanned Data:</h2>
-                  <p className="break-all">{scannedData}</p>
-                </div>
+                <>
+                  <div className="mt-4">
+                    <h2 className="text-lg font-semibold">Scanned Data:</h2>
+                    <p className="break-all">{scannedData}</p>
+                  </div>
+                  <div className="mt-4 flex justify-center">
+                    <QRCodeSVG value={scannedData} size={256} />
+                  </div>
+                </>
               )}
             </CardContent>
           </Card>
@@ -80,4 +89,3 @@ export default function QRCodeApp() {
     </div>
   )
 }
-
